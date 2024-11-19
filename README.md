@@ -37,4 +37,4 @@ This project is a web-based tool for selecting coordinates on an uploaded image.
 1. Clone the repository:  
 2. yarn install
 3. yarn run dev
-# IOT_Project
+
