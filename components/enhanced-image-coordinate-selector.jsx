@@ -1,11 +1,12 @@
-'use client'
 
+'use client'
 import { useState, useRef, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Upload, X } from 'lucide-react'
+// import axios from 'axios'
 
 export function EnhancedImageCoordinateSelectorComponent() {
   const [image, setImage] = useState(null)
@@ -44,24 +45,102 @@ export function EnhancedImageCoordinateSelectorComponent() {
     setCoordinates(prev => [...prev, [Math.round(clickX), Math.round(clickY)]])
   }
 
-  const handleSubmit = async () => {
-    if (!image || coordinates.length !== 2) return
+const handleSubmit = async () => {
+  if (!image || coordinates.length !== 2) return;
+
+  try {
+    console.log('Starting image upload process...');
+
+    // Step 1: Upload the image to ImgBB
+    console.log('Uploading image to ImgBB...');
+    const formData = new FormData();
+    formData.append('image', image.split(',')[1]); // Extract base64 data
+
+    const imgbbResponse = await fetch('https://api.imgbb.com/1/upload?key=e485587c4fca65b0ec4f7eefb439c192', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!imgbbResponse.ok) {
+      console.error('ImgBB upload failed:', await imgbbResponse.text());
+      throw new Error('Failed to upload image');
+    }
+
+    const imgbbData = await imgbbResponse.json();
+    const imageUrl = imgbbData.data.url; // URL of the uploaded image
+    console.log('Image uploaded successfully. URL:', imageUrl);
+
+    // Step 2: Post image URL and coordinates to the API
+    console.log('Posting data to the API...');
+    // const apiResponse = await axios.post('https://9578kn0c-8000.inc1.devtunnels.ms/get-distance', {
+    //   image: imageUrl,
+    //   coordinates,
+    // }, {
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   timeout: 1800000, // 3 minutes in milliseconds
+    // });
+
+    // if (apiResponse.status !== 200) {
+    //   console.error('API submission failed:', apiResponse.statusText);
+    //   throw new Error('Failed to submit data to the API');
+    // }
+
+
 
     try {
-      // Replace 'https://your-api-endpoint.com/process-image' with your actual API endpoint
-      const response = await fetch('https://your-api-endpoint.com/process-image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image, coordinates }),
-      })
+      console.log('Starting WebSocket connection...');
+  
+      // Establish WebSocket connection
+      const WEBSOCKET_URL = "ws://9578kn0c-8000.inc1.devtunnels.ms/ws/get-distance";
+const ws = new WebSocket(WEBSOCKET_URL);
 
-      if (!response.ok) throw new Error('Failed to submit data')
+ws.onopen = () => {
+  console.log('WebSocket connection opened.');
 
-      setIsSubmitted(true)
-    } catch (error) {
-      console.error('Error submitting coordinates:', error)
-    }
+  // Send image URL and coordinates
+  const requestData = {
+    image:imageUrl, // Base64 encoded image
+    coordinates,
+  };
+  ws.send(JSON.stringify(requestData));
+  console.log('Sent data to WebSocket:', requestData);
+};
+
+ws.onmessage = (event) => {
+  const response = JSON.parse(event.data);
+  console.log('Received message from server:', response);
+
+  if (response.error) {
+    console.error('Error from server:', response.error);
+  } else if (response.distance) {
+    console.log('3D Distance received from server:', response.distance);
+    setIsSubmitted(true);
+  } else {
+    console.log('Unexpected response from server:', response);
   }
+};
+
+ws.onerror = (error) => {
+  console.error('WebSocket error:', error.message);
+};
+
+ws.onclose = () => {
+  console.log('WebSocket connection closed.');
+};
+
+    } catch (error) {
+      console.error('Error during WebSocket communication:', error);
+    }
+
+    console.log('Data submitted successfully to the API.');
+    setIsSubmitted(true);
+
+  } catch (error) {
+    console.error('Error during submission:', error);
+  }
+};
 
   const resetSelection = () => {
     setImage(null)
