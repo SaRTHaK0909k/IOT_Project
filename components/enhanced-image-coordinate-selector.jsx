@@ -86,7 +86,7 @@ export function EnhancedImageCoordinateSelectorComponent() {
         coordinates.forEach((coord, index) => {
           if (ctx) {
             ctx.beginPath()
-            ctx.arc(coord[0], coord[1], 10, 0, 2 * Math.PI)
+            ctx.arc(coord[0], coord[1], 12, 0, 2 * Math.PI)
             ctx.fillStyle = 'red'
             ctx.fill()
             ctx.fillStyle = 'white'
