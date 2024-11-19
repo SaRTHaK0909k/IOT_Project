@@ -64,12 +64,9 @@ export function EnhancedImageCoordinateSelectorComponent() {
   }
 
   const resetSelection = () => {
+    setImage(null)
     setCoordinates([])
     setIsSubmitted(false)
-    if (canvasRef.current && imageRef.current) {
-      const ctx = canvasRef.current.getContext('2d')
-      ctx?.drawImage(imageRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height)
-    }
   }
 
   useEffect(() => {
@@ -86,11 +83,11 @@ export function EnhancedImageCoordinateSelectorComponent() {
         coordinates.forEach((coord, index) => {
           if (ctx) {
             ctx.beginPath()
-            ctx.arc(coord[0], coord[1], 12, 0, 2 * Math.PI)
+            ctx.arc(coord[0], coord[1], 10, 0, 2 * Math.PI)
             ctx.fillStyle = 'red'
             ctx.fill()
             ctx.fillStyle = 'white'
-            ctx.font = '32px Arial'
+            ctx.font = '16px Arial'
             ctx.fillText((index + 1).toString(), coord[0] + 10, coord[1] - 10)
           }
         })
@@ -105,32 +102,30 @@ export function EnhancedImageCoordinateSelectorComponent() {
         <CardTitle>Image Coordinate Selector</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center justify-center w-full">
-          <Label
-            htmlFor="image-upload"
-            className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
-            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-              <Upload className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" />
-              <p className="mb-2 text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG or GIF (MAX. 800x400px)</p>
-            </div>
-            <Input
-              id="image-upload"
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="hidden" />
-          </Label>
-        </div>
-
-        {isUploading && <p className="text-center">Uploading image...</p>}
-
-        {image && (
+        {!image ? (
+          <div className="flex items-center justify-center w-full">
+            <Label
+              htmlFor="image-upload"
+              className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                <Upload className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" />
+                <p className="mb-2 text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG or GIF (MAX. 800x400px)</p>
+              </div>
+              <Input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden" />
+            </Label>
+          </div>
+        ) : (
           <div className="mt-4 relative">
             <canvas
               ref={canvasRef}
               onClick={handleCanvasClick}
-              className="border border-gray-300 rounded-lg cursor-crosshair max-w-full h-auto" />
+              className="border border-gray-300 dark:border-gray-600 rounded-lg cursor-crosshair max-w-full h-auto" />
             <Button
               variant="outline"
               size="icon"
@@ -140,6 +135,8 @@ export function EnhancedImageCoordinateSelectorComponent() {
             </Button>
           </div>
         )}
+
+        {isUploading && <p className="text-center">Uploading image...</p>}
 
         {coordinates.length > 0 && (
           <div className="space-y-2">
@@ -158,7 +155,8 @@ export function EnhancedImageCoordinateSelectorComponent() {
         </Button>
 
         {isSubmitted && (
-          <div className="mt-4 p-4 bg-green-100 text-green-700 rounded-md">
+          <div
+            className="mt-4 p-4 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-100 rounded-md">
             Coordinates submitted successfully!
             <p>Point 1: ({coordinates[0][0]}, {coordinates[0][1]})</p>
             <p>Point 2: ({coordinates[1][0]}, {coordinates[1][1]})</p>
